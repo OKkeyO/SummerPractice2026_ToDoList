@@ -120,10 +120,33 @@ textarea {
 .task_info {
     flex: 1;
 }
-.task_important {
-
+.task_important__button {
+    height: 30px;
+    width: 150px;
+    color: white;
+    background: #49ae6d;
+    border: none;
+    border-radius: 15px;
+    box-shadow: #aaaaaa 1px 1px 4px;
 }
-.task_delete {
-    height: 40px;
-    width: 40px ;
+.task_important__button:hover{
+    box-shadow: none;
+}
+.task_important__button:active {
+    box-shadow: inset #378151 1px 1px 20px;
+}
+.task_delete__button {
+    height: 30px;
+    width: 30px ;
+    color: gray;
+    border: none;
+    border-radius: 45px;
+    box-shadow: #aaaaaa 1px 1px 4px;
+}
+.task_delete__button:hover {
+    box-shadow: none;
+}
+.task_delete__button:active {
+    color: darkred;
+    background-color: red;
 }
