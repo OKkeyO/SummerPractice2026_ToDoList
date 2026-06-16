@@ -7,6 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>ToDoList</title>
 
+    <script src="https://kit.fontawesome.com/bcc2fd2fa3.js" crossorigin="anonymous"></script>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
@@ -17,6 +18,7 @@
             <img src="/images/SenlaLogo.png" alt="Senla Logo" class="logo">
         </div>
         <form class="searchbar" action="/search">
+            <i class="fa-solid fa-magnifying-glass"></i>
             <label>
                 <input class="searchbar__input" type="text" name="search" placeholder="Search task for to do">
             </label>
@@ -44,14 +46,18 @@
                         <span>Complete todo list</span>
                     </div>
                     <button class="task_important">Mark Important</button>
-                    <button class="task_delete">Delete</button>
+                    <button class="task_delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </li>
                 <li class="task">
                     <div class="task_info">
                         <span>Make breakfast</span>
                     </div>
                     <button class="task_important">Mark Important</button>
-                    <button class="task_delete">Delete</button>
+                    <button class="task_delete">
+                        <i class="fa-solid fa-trash-can"></i>
+                    </button>
                 </li>
             </ul>
         </div>

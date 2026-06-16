@@ -23,8 +23,15 @@ header {
 }
 
 .searchbar {
+    position: relative;
     margin-right: 20px;
     width: 100%;
+}
+.fa-magnifying-glass{
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    color: grey;
 }
 .searchbar__input{
     padding-left: 30px;
@@ -116,6 +123,7 @@ textarea {
 .task_important {
 
 }
-.task_details {
-
+.task_delete {
+    height: 40px;
+    width: 40px ;
 }
