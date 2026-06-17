@@ -1,41 +1,10 @@
 
-// fetch('http://jsonplaceholder.typicode.com/todos/1')
-// .then(response => response.text())
-// .then(json => console.log(json));
+window.onload = async () => {
+    let tasks = await getTasks(3);
 
-// async function getUsers(names) {
-//
-//     let users = [];
-//
-//     for (const name of names) {
-//         let response = await fetch(`https://api.github.com/users/${name}`).then(
-//             sucResponce => {
-//                 if (sucResponce.status != 200) {
-//                     return null;
-//                 } else {
-//                     return sucResponce.json();
-//                 }
-//             },
-//             failResponce => {
-//                 return null;
-//             }
-//         );
-//
-//         // let user = await response.json();
-//         users.push(response);
-//     }
-//
-//     return await Promise.all(users);
-// }
-//
-//
-//
-// let users = getUsers(['OKkeyO', 'S4V4NN4', 'ADasfqwfasd']);
-//
-// console.log(users);
-
-window.onload = () => {
-    addTask("Hello World");
+    tasks.map((task) => {
+        addTask(task)
+    });
 }
 
 const taskList = document.querySelectorAll('.task_list');
@@ -72,3 +41,32 @@ function addTask(newTaskInfo) {
     taskList[0].appendChild(newTask);
 }
 
+// функция получения задач из api
+async function getTasks(amount) {
+
+    let tasks = [];
+
+    for (let i = 0; i < amount; i++) {
+
+        let task;
+        await fetch(`http://jsonplaceholder.typicode.com/todos/${i}`)
+            .then(res => {
+                if (res.status !== 200) {
+                    return null;
+                } else {
+                    return res.json();
+                }
+            })
+            .then(json => {
+                if (json == null) {
+                    return null;
+                } else {
+                    task = json.title;
+                }
+            });
+        if (task !== undefined) {
+            tasks.push(task);
+        }
+    }
+    return tasks;
+}
