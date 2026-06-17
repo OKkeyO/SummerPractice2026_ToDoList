@@ -1,4 +1,4 @@
-
+// загрузка задач из api при загрузке окна
 window.onload = async () => {
     let tasks = await getTasks(3);
 
@@ -8,7 +8,17 @@ window.onload = async () => {
 }
 
 const taskList = document.querySelectorAll('.task_list');
+const addNewTaskForm = document.querySelector('.add_new_task');
 
+// listener к форме создания новой задачи
+addNewTaskForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let addNewTaskValue = document.getElementById('newTask').value;
+
+    addTask(addNewTaskValue);
+})
+
+// функция создания новой задачи
 function addTask(newTaskInfo) {
 
     // элемент списка <li>
