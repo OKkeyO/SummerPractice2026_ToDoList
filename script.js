@@ -1,22 +1,11 @@
-// загрузка задач из api при загрузке окна
-window.onload = async () => {
-    let tasks = await getTasks(3);
+const API_URL = 'http://jsonplaceholder.typicode.com/todos';
+const LIMIT = 2;
 
-    tasks.map((task) => {
-        addTask(task)
-    });
-}
+let TASKS_FROM_API = [];
 
-const taskList = document.querySelectorAll('.task_list');
-const addNewTaskForm = document.querySelector('.add_new_task');
+const TASK_LIST = document.querySelector('.task_list');
+const ADD_NEW_TASK_FORM = document.querySelector('.add_new_task');
 
-// listener к форме создания новой задачи
-addNewTaskForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    let addNewTaskValue = document.getElementById('newTask').value;
-
-    addTask(addNewTaskValue);
-})
 
 // функция создания новой задачи
 function addTask(newTaskInfo) {
@@ -29,13 +18,13 @@ function addTask(newTaskInfo) {
     const newTaskTextDiv = document.createElement('div');
     newTaskTextDiv.setAttribute('class', 'task_info');
     const newTaskText = document.createElement('span');
-    newTaskText.innerHTML = newTaskInfo;
+    newTaskText.textContent = newTaskInfo;
     newTaskTextDiv.appendChild(newTaskText);
 
     // кнопка mark important
     const newTaskBtnMarkImportant = document.createElement('button');
     newTaskBtnMarkImportant.setAttribute('class', 'task_important__button');
-    newTaskBtnMarkImportant.innerHTML = 'Mark Important';
+    newTaskBtnMarkImportant.textContent = 'Mark Important';
 
     // кнопка удаления задачи
     const newTaskBtnDelete = document.createElement('button');
@@ -48,35 +37,49 @@ function addTask(newTaskInfo) {
     newTask.appendChild(newTaskTextDiv);
     newTask.appendChild(newTaskBtnMarkImportant);
     newTask.appendChild(newTaskBtnDelete);
-    taskList[0].appendChild(newTask);
+    TASK_LIST.appendChild(newTask);
 }
 
 // функция получения задач из api
-async function getTasks(amount) {
+async function getTasks() {
 
     let tasks = [];
 
-    for (let i = 0; i < amount; i++) {
+    await fetch(`${API_URL}?_limit=${LIMIT}`)
+        .then(res => {
+            if (res.status !== 200) {
+                return null;
+            } else {
+                return res.json();
+            }
+        })
+        .then(json => {
+            if (json == null) {
+                return null;
+            } else {
+                tasks = json;
+            }
+        });
 
-        let task;
-        await fetch(`http://jsonplaceholder.typicode.com/todos/${i}`)
-            .then(res => {
-                if (res.status !== 200) {
-                    return null;
-                } else {
-                    return res.json();
-                }
-            })
-            .then(json => {
-                if (json == null) {
-                    return null;
-                } else {
-                    task = json.title;
-                }
-            });
-        if (task !== undefined) {
-            tasks.push(task);
-        }
-    }
     return tasks;
 }
+
+
+// listener к форме создания новой задачи
+ADD_NEW_TASK_FORM.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let addNewTaskTextArea = document.getElementById('newTask');
+    let addNewTaskValue = addNewTaskTextArea.value;
+    addNewTaskTextArea.value = "";
+
+    addTask(addNewTaskValue);
+})
+
+// загрузка задач из api при загрузке окна
+document.addEventListener('DOMContentLoaded', async () => {
+    TASKS_FROM_API = await getTasks();
+
+    TASKS_FROM_API.forEach((task) => {
+        addTask(task.title)
+    });
+})
