@@ -1,7 +1,7 @@
 const API_URL = 'http://jsonplaceholder.typicode.com/todos';
-const LIMIT = 2;
+const LIMIT = 20;
 
-let TASKS_FROM_API = [];
+let ALL_TASKS = [];
 
 const TASK_LIST = document.querySelector('.task_list');
 const ADD_NEW_TASK_FORM = document.querySelector('.add_new_task');
@@ -40,6 +40,23 @@ function addTask(newTaskInfo) {
     TASK_LIST.appendChild(newTask);
 }
 
+// POST запрос на api
+async function saveTask(taskInfo) {
+    let response = await fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+            userId: 1,
+            title: taskInfo,
+            completed: false,
+        }),
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8'
+        },
+    })
+
+    return response.json();
+}
+
 // функция получения задач из api
 async function getTasks() {
 
@@ -66,20 +83,25 @@ async function getTasks() {
 
 
 // listener к форме создания новой задачи
-ADD_NEW_TASK_FORM.addEventListener('submit', (e) => {
+ADD_NEW_TASK_FORM.addEventListener('submit', async (e) => {
     e.preventDefault();
     let addNewTaskTextArea = document.getElementById('newTask');
     let addNewTaskValue = addNewTaskTextArea.value;
     addNewTaskTextArea.value = "";
 
-    addTask(addNewTaskValue);
+    let newTask = await saveTask(addNewTaskValue);
+    // меняем id у задачи, потому что api всегда возвращает фиксированное значение
+    newTask.id = ALL_TASKS.length + 1;
+    ALL_TASKS.push(newTask);
+
+    addTask(newTask.title);
 })
 
 // загрузка задач из api при загрузке окна
 document.addEventListener('DOMContentLoaded', async () => {
-    TASKS_FROM_API = await getTasks();
+    ALL_TASKS = await getTasks();
 
-    TASKS_FROM_API.forEach((task) => {
+    ALL_TASKS.forEach((task) => {
         addTask(task.title)
     });
 })
