@@ -1,4 +1,4 @@
-const API_URL = 'http://jsonplaceholder.typicode.com/todos';
+const API_URL = 'https://jsonplaceholder.typicode.com/todos';
 const LIMIT = 20;
 
 let ALL_TASKS = [];
@@ -44,14 +44,14 @@ function addTask(newTaskInfo) {
 async function saveTask(taskInfo) {
     let response = await fetch(API_URL, {
         method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8'
+        },
         body: JSON.stringify({
             userId: 1,
             title: taskInfo,
             completed: false,
         }),
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8'
-        },
     })
 
     return response.json();
