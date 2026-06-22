@@ -1,22 +1,11 @@
-// загрузка задач из api при загрузке окна
-window.onload = async () => {
-    let tasks = await getTasks(3);
+const API_URL = 'https://jsonplaceholder.typicode.com/todos';
+const LIMIT = 20;
 
-    tasks.map((task) => {
-        addTask(task)
-    });
-}
+let allTasks = [];
 
-const taskList = document.querySelectorAll('.task_list');
+const taskList = document.querySelector('.task_list');
 const addNewTaskForm = document.querySelector('.add_new_task');
 
-// listener к форме создания новой задачи
-addNewTaskForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    let addNewTaskValue = document.getElementById('newTask').value;
-
-    addTask(addNewTaskValue);
-})
 
 // функция создания новой задачи
 function addTask(newTaskInfo) {
@@ -29,13 +18,13 @@ function addTask(newTaskInfo) {
     const newTaskTextDiv = document.createElement('div');
     newTaskTextDiv.setAttribute('class', 'task_info');
     const newTaskText = document.createElement('span');
-    newTaskText.innerHTML = newTaskInfo;
+    newTaskText.textContent = newTaskInfo;
     newTaskTextDiv.appendChild(newTaskText);
 
     // кнопка mark important
     const newTaskBtnMarkImportant = document.createElement('button');
     newTaskBtnMarkImportant.setAttribute('class', 'task_important__button');
-    newTaskBtnMarkImportant.innerHTML = 'Mark Important';
+    newTaskBtnMarkImportant.textContent = 'Mark Important';
 
     // кнопка удаления задачи
     const newTaskBtnDelete = document.createElement('button');
@@ -48,35 +37,78 @@ function addTask(newTaskInfo) {
     newTask.appendChild(newTaskTextDiv);
     newTask.appendChild(newTaskBtnMarkImportant);
     newTask.appendChild(newTaskBtnDelete);
-    taskList[0].appendChild(newTask);
+    taskList.appendChild(newTask);
+}
+
+// POST запрос на api
+async function saveTask(taskInfo) {
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({
+                userId: 1,
+                title: taskInfo,
+                completed: false,
+            }),
+        });
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+        return await response.json();
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
 // функция получения задач из api
-async function getTasks(amount) {
+async function getTasks() {
+    try {
+        const response = await fetch(`${API_URL}?_limit=${LIMIT}`);
 
-    let tasks = [];
-
-    for (let i = 0; i < amount; i++) {
-
-        let task;
-        await fetch(`http://jsonplaceholder.typicode.com/todos/${i}`)
-            .then(res => {
-                if (res.status !== 200) {
-                    return null;
-                } else {
-                    return res.json();
-                }
-            })
-            .then(json => {
-                if (json == null) {
-                    return null;
-                } else {
-                    task = json.title;
-                }
-            });
-        if (task !== undefined) {
-            tasks.push(task);
+        if (!response.ok) {
+            throw new Error(response.statusText);
         }
+        return await response.json();
+    } catch (error) {
+        console.log("Не удалось загрузить задачи", error);
+        return [];
     }
-    return tasks;
 }
+
+
+// listener к форме создания новой задачи
+addNewTaskForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+        const addNewTaskTextArea = document.getElementById('newTask');
+        const addNewTaskValue = addNewTaskTextArea.value;
+        addNewTaskTextArea.value = "";
+
+        const newTask = await saveTask(addNewTaskValue);
+        if (!newTask) {
+            throw new Error("Сервер не вернул данные новой задачи.")
+        }
+        // меняем id у задачи, потому что api всегда возвращает фиксированное значение
+        newTask.id = allTasks.length + 1;
+        allTasks.push(newTask);
+
+        addTask(newTask.title);
+    } catch (error) {
+        alert(`Не удалось сохранить задачу. ${error.message}`);
+    }
+})
+
+// загрузка задач из api при загрузке окна
+document.addEventListener('DOMContentLoaded', async () => {
+    allTasks = await getTasks();
+
+    allTasks.forEach((task) => {
+        if (task.title) {
+            addTask(task.title)
+        }
+    });
+})
