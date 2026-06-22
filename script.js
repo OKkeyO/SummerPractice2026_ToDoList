@@ -1,10 +1,10 @@
 const API_URL = 'https://jsonplaceholder.typicode.com/todos';
 const LIMIT = 20;
 
-let ALL_TASKS = [];
+let allTasks = [];
 
-const TASK_LIST = document.querySelector('.task_list');
-const ADD_NEW_TASK_FORM = document.querySelector('.add_new_task');
+const taskList = document.querySelector('.task_list');
+const addNewTaskForm = document.querySelector('.add_new_task');
 
 
 // функция создания новой задачи
@@ -37,71 +37,78 @@ function addTask(newTaskInfo) {
     newTask.appendChild(newTaskTextDiv);
     newTask.appendChild(newTaskBtnMarkImportant);
     newTask.appendChild(newTaskBtnDelete);
-    TASK_LIST.appendChild(newTask);
+    taskList.appendChild(newTask);
 }
 
 // POST запрос на api
 async function saveTask(taskInfo) {
-    let response = await fetch(API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json; charset=UTF-8'
-        },
-        body: JSON.stringify({
-            userId: 1,
-            title: taskInfo,
-            completed: false,
-        }),
-    })
-
-    return response.json();
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json; charset=UTF-8'
+            },
+            body: JSON.stringify({
+                userId: 1,
+                title: taskInfo,
+                completed: false,
+            }),
+        });
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+        return await response.json();
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
 }
 
 // функция получения задач из api
 async function getTasks() {
+    try {
+        const response = await fetch(`${API_URL}?_limit=${LIMIT}`);
 
-    let tasks = [];
-
-    await fetch(`${API_URL}?_limit=${LIMIT}`)
-        .then(res => {
-            if (res.status !== 200) {
-                return null;
-            } else {
-                return res.json();
-            }
-        })
-        .then(json => {
-            if (json == null) {
-                return null;
-            } else {
-                tasks = json;
-            }
-        });
-
-    return tasks;
+        if (!response.ok) {
+            throw new Error(response.statusText);
+        }
+        return await response.json();
+    } catch (error) {
+        console.log("Не удалось загрузить задачи", error);
+        return [];
+    }
 }
 
 
 // listener к форме создания новой задачи
-ADD_NEW_TASK_FORM.addEventListener('submit', async (e) => {
+addNewTaskForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    let addNewTaskTextArea = document.getElementById('newTask');
-    let addNewTaskValue = addNewTaskTextArea.value;
-    addNewTaskTextArea.value = "";
+    try {
+        const addNewTaskTextArea = document.getElementById('newTask');
+        const addNewTaskValue = addNewTaskTextArea.value;
+        addNewTaskTextArea.value = "";
 
-    let newTask = await saveTask(addNewTaskValue);
-    // меняем id у задачи, потому что api всегда возвращает фиксированное значение
-    newTask.id = ALL_TASKS.length + 1;
-    ALL_TASKS.push(newTask);
+        const newTask = await saveTask(addNewTaskValue);
+        if (!newTask) {
+            throw new Error("Сервер не вернул данные новой задачи.")
+        }
+        // меняем id у задачи, потому что api всегда возвращает фиксированное значение
+        newTask.id = allTasks.length + 1;
+        allTasks.push(newTask);
 
-    addTask(newTask.title);
+        addTask(newTask.title);
+    } catch (error) {
+        alert(`Не удалось сохранить задачу. ${error.message}`);
+    }
 })
 
 // загрузка задач из api при загрузке окна
 document.addEventListener('DOMContentLoaded', async () => {
-    ALL_TASKS = await getTasks();
+    allTasks = await getTasks();
 
-    ALL_TASKS.forEach((task) => {
-        addTask(task.title)
+    allTasks.forEach((task) => {
+        if (task.title) {
+            addTask(task.title)
+        }
     });
 })
