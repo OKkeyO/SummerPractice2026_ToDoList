@@ -19,6 +19,10 @@ function addTask(newTaskInfo) {
     const newTaskTextDiv = document.createElement('div');
     newTaskTextDiv.setAttribute('class', 'task_info');
     const newTaskText = document.createElement('span');
+    newTaskText.setAttribute('class', 'task_text');
+    if (newTaskInfo.completed){
+        newTaskText.classList.add('completed');
+    }
     newTaskText.textContent = newTaskInfo.title;
     newTaskTextDiv.appendChild(newTaskText);
 
@@ -80,12 +84,28 @@ async function deleteTask(taskId) {
     const response = await fetch(`${API_URL}/${taskId}`, {
         method: 'DELETE',
     });
-    console.log(response);
     if (!response.ok) {
         throw new Error(`Ошибка удаления: ${response.status}`);
     }
 }
 
+// обновление задачи
+async function updateTask(task) {
+    const response = await fetch(`${API_URL}/${task.id}`, {
+        method: 'PUT',
+        headers: {
+            'Content-type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({
+            userId: task.userId,
+            title: task.title,
+            completed: task.completed,
+        }),
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка изменения данных: ${response.status}`);
+    }
+}
 
 // listener к форме создания новой задачи
 addNewTaskForm.addEventListener('submit', async (e) => {
@@ -121,7 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 taskList.addEventListener('click', async (e) => {
     try {
         const clickedElement = e.target;
-
         // если была нажата кнопка удаления задачи
         if (clickedElement.classList.contains('fa-trash-can')) {
             const task = clickedElement.parentElement.parentElement;
@@ -129,6 +148,15 @@ taskList.addEventListener('click', async (e) => {
             await deleteTask(taskId);
             task.remove();
             allTasks = allTasks.filter(t => t.id !== taskId);
+        }
+        // если нажат сам элемент списка задач
+        if (clickedElement.className === 'task') {
+            const taskId = Number(clickedElement.dataset.id);
+            const taskText = clickedElement.querySelector('.task_text');
+            const task = allTasks.find((t) => t.id === taskId);
+            task.completed = !task.completed;
+            await updateTask(task);
+            taskText.classList.toggle('completed');
         }
 
     } catch (error) {

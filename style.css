@@ -134,6 +134,10 @@ textarea {
     flex: 1;
 }
 
+.task_text.completed {
+    text-decoration: line-through;
+}
+
 .task_important__button {
     height: 30px;
     width: 150px;
