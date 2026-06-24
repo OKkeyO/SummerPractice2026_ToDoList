@@ -13,12 +13,13 @@ function addTask(newTaskInfo) {
     // элемент списка <li>
     const newTask = document.createElement('li');
     newTask.setAttribute('class', 'task');
+    newTask.dataset.id = newTaskInfo.id;
 
     // <div> в котором <span> с текстом задачи
     const newTaskTextDiv = document.createElement('div');
     newTaskTextDiv.setAttribute('class', 'task_info');
     const newTaskText = document.createElement('span');
-    newTaskText.textContent = newTaskInfo;
+    newTaskText.textContent = newTaskInfo.title;
     newTaskTextDiv.appendChild(newTaskText);
 
     // кнопка mark important
@@ -79,6 +80,17 @@ async function getTasks() {
     }
 }
 
+// функция удаления задачи
+async function deleteTask(taskId) {
+    const response = await fetch(`${API_URL}/${taskId}`, {
+        method: 'DELETE',
+    });
+    console.log(response);
+    if (!response.ok) {
+        throw new Error(`Ошибка удаления: ${response.status}`);
+    }
+}
+
 
 // listener к форме создания новой задачи
 addNewTaskForm.addEventListener('submit', async (e) => {
@@ -96,7 +108,7 @@ addNewTaskForm.addEventListener('submit', async (e) => {
         newTask.id = allTasks.length + 1;
         allTasks.push(newTask);
 
-        addTask(newTask.title);
+        addTask(newTask);
     } catch (error) {
         alert(`Не удалось сохранить задачу. ${error.message}`);
     }
@@ -108,7 +120,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     allTasks.forEach((task) => {
         if (task.title) {
-            addTask(task.title)
+            addTask(task)
         }
     });
+})
+
+// действия с taskList
+taskList.addEventListener('click', async (e) => {
+    try {
+        const clickedElement = e.target;
+
+        // если была нажата кнопка удаления задачи
+        if (clickedElement.classList.contains('fa-trash-can')) {
+            const task = clickedElement.parentElement.parentElement;
+            const taskId = Number(task.dataset.id);
+            await deleteTask(taskId);
+            task.remove();
+            allTasks = allTasks.filter(t => t.id !== taskId);
+        }
+
+    } catch (error) {
+        console.log(error);
+    }
 })
