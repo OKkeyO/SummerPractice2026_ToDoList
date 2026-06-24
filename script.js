@@ -43,26 +43,21 @@ function addTask(newTaskInfo) {
 
 // POST запрос на api
 async function saveTask(taskInfo) {
-    try {
-        const response = await fetch(API_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json; charset=UTF-8'
-            },
-            body: JSON.stringify({
-                userId: 1,
-                title: taskInfo,
-                completed: false,
-            }),
-        });
-        if (!response.ok) {
-            throw new Error(response.statusText);
-        }
-        return await response.json();
-    } catch (error) {
-        console.log(error);
-        throw error;
+    const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json; charset=UTF-8'
+        },
+        body: JSON.stringify({
+            userId: 1,
+            title: taskInfo,
+            completed: false,
+        }),
+    });
+    if (!response.ok) {
+        throw new Error(`Ошибка сохранения на сервере: ${response.status}`);
     }
+    return await response.json();
 }
 
 // функция получения задач из api
@@ -71,7 +66,7 @@ async function getTasks() {
         const response = await fetch(`${API_URL}?_limit=${LIMIT}`);
 
         if (!response.ok) {
-            throw new Error(response.statusText);
+            throw new Error(`Ошибка: ${response.status}`);
         }
         return await response.json();
     } catch (error) {
@@ -101,9 +96,6 @@ addNewTaskForm.addEventListener('submit', async (e) => {
         addNewTaskTextArea.value = "";
 
         const newTask = await saveTask(addNewTaskValue);
-        if (!newTask) {
-            throw new Error("Сервер не вернул данные новой задачи.")
-        }
         // меняем id у задачи, потому что api всегда возвращает фиксированное значение
         newTask.id = allTasks.length + 1;
         allTasks.push(newTask);
