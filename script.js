@@ -2,6 +2,7 @@ const API_URL = 'https://jsonplaceholder.typicode.com/todos';
 const LIMIT = 20;
 
 let allTasks = [];
+let currentFilter = 'all';
 
 const taskList = document.querySelector('.task_list');
 const addNewTaskForm = document.querySelector('.add_new_task');
@@ -109,9 +110,11 @@ async function updateTask(task) {
     }
 }
 
+// функция фильтрации
 function filterTasks(filterParam) {
     const tasks = taskList.querySelectorAll('.task');
 
+    // отображение элементов соответствующих фильтру
     tasks.forEach(task => {
         task.classList.remove('hide');
         const taskId = Number(task.dataset.id);
@@ -131,6 +134,7 @@ function filterTasks(filterParam) {
         }
     });
 
+    // подсветка выбранного фильтра
     navListItems.forEach(navListItem => {
         navListItem.classList.remove('active');
        if (navListItem.dataset.f === filterParam) {
@@ -153,6 +157,7 @@ addNewTaskForm.addEventListener('submit', async (e) => {
         allTasks.push(newTask);
 
         addTask(newTask);
+        filterTasks(currentFilter);
     } catch (error) {
         alert(`Не удалось сохранить задачу. ${error.message}`);
     }
@@ -167,6 +172,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             addTask(task)
         }
     });
+
+    filterTasks(currentFilter);
 })
 
 // действия с taskList
@@ -191,15 +198,15 @@ taskList.addEventListener('click', async (e) => {
             taskText.classList.toggle('completed');
         }
 
+        filterTasks(currentFilter);
     } catch (error) {
         console.log(error);
     }
 })
 
+// listener на nav
 navList.addEventListener('click', (e) => {
     if (e.target.tagName !== 'LI') return;
-
-    const filterClass = e.target.dataset.f;
-    console.log(filterClass);
-    filterTasks(filterClass);
+    currentFilter = e.target.dataset.f;
+    filterTasks(currentFilter);
 })
