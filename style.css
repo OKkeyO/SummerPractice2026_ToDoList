@@ -58,16 +58,20 @@ header {
     list-style: none;
 }
 
-.nav_link, .nav_link:visited {
+.nav_item {
     color: grey;
     text-decoration: none;
 }
 
-.nav_link:hover {
+.nav_item:hover {
     color: #292929;
     font-weight: bold;
 }
 
+.active {
+    color: #292929;
+    font-weight: bold;
+}
 
 .add_new_task {
     display: flex;
@@ -125,6 +129,10 @@ textarea {
     height: auto;
     border-radius: 6px;
     box-shadow: #aaaaaa 1px 1px 4px;
+}
+
+.hide {
+    display: none;
 }
 
 .task:hover {

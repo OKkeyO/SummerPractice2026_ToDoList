@@ -5,6 +5,8 @@ let allTasks = [];
 
 const taskList = document.querySelector('.task_list');
 const addNewTaskForm = document.querySelector('.add_new_task');
+const navList = document.querySelector('.nav_list');
+const navListItems = document.querySelectorAll('.nav_item');
 
 
 // функция создания новой задачи
@@ -20,7 +22,7 @@ function addTask(newTaskInfo) {
     newTaskTextDiv.setAttribute('class', 'task_info');
     const newTaskText = document.createElement('span');
     newTaskText.setAttribute('class', 'task_text');
-    if (newTaskInfo.completed){
+    if (newTaskInfo.completed) {
         newTaskText.classList.add('completed');
     }
     newTaskText.textContent = newTaskInfo.title;
@@ -107,6 +109,36 @@ async function updateTask(task) {
     }
 }
 
+function filterTasks(filterParam) {
+    const tasks = taskList.querySelectorAll('.task');
+
+    tasks.forEach(task => {
+        task.classList.remove('hide');
+        const taskId = Number(task.dataset.id);
+        const taskData = allTasks.find((t) => t.id === taskId);
+
+        switch (filterParam) {
+            case 'active':
+                if (taskData.completed) {
+                    task.classList.add('hide');
+                }
+                break;
+            case 'done':
+                if (!taskData.completed) {
+                    task.classList.add('hide');
+                }
+                break;
+        }
+    });
+
+    navListItems.forEach(navListItem => {
+        navListItem.classList.remove('active');
+       if (navListItem.dataset.f === filterParam) {
+           navListItem.classList.add('active');
+       }
+    });
+}
+
 // listener к форме создания новой задачи
 addNewTaskForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -162,4 +194,12 @@ taskList.addEventListener('click', async (e) => {
     } catch (error) {
         console.log(error);
     }
+})
+
+navList.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'LI') return;
+
+    const filterClass = e.target.dataset.f;
+    console.log(filterClass);
+    filterTasks(filterClass);
 })
