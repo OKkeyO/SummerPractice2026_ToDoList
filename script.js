@@ -8,6 +8,7 @@ const taskList = document.querySelector('.task_list');
 const addNewTaskForm = document.querySelector('.add_new_task');
 const navList = document.querySelector('.nav_list');
 const navListItems = document.querySelectorAll('.nav_item');
+const searchbarInput = document.querySelector('.searchbar__input');
 
 
 // функция создания новой задачи
@@ -137,10 +138,20 @@ function filterTasks(filterParam) {
     // подсветка выбранного фильтра
     navListItems.forEach(navListItem => {
         navListItem.classList.remove('active');
-       if (navListItem.dataset.f === filterParam) {
-           navListItem.classList.add('active');
-       }
+        if (navListItem.dataset.f === filterParam) {
+            navListItem.classList.add('active');
+        }
     });
+}
+
+// функция поиска
+function searchTasks(value) {
+    const searchedTasks = allTasks.filter(task =>
+        task.title.toLowerCase().includes(value)
+    );
+    taskList.replaceChildren();
+    searchedTasks.forEach(addTask);
+    filterTasks(currentFilter);
 }
 
 // listener к форме создания новой задачи
@@ -209,4 +220,10 @@ navList.addEventListener('click', (e) => {
     if (e.target.tagName !== 'LI') return;
     currentFilter = e.target.dataset.f;
     filterTasks(currentFilter);
+})
+
+// listener на поле поиска
+searchbarInput.addEventListener('input', (e) => {
+    const value = e.target.value.toLowerCase();
+    searchTasks(value);
 })
