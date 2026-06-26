@@ -22,12 +22,17 @@ function addTask(newTaskInfo) {
     // <div> в котором <span> с текстом задачи
     const newTaskTextDiv = document.createElement('div');
     newTaskTextDiv.setAttribute('class', 'task_info');
+    const iconImportant = document.createElement('i');
+    iconImportant.setAttribute('class', 'fa-regular fa-star');
+    iconImportant.classList.add('hide');
     const newTaskText = document.createElement('span');
     newTaskText.setAttribute('class', 'task_text');
     if (newTaskInfo.completed) {
+        iconImportant.classList.add('completed');
         newTaskText.classList.add('completed');
     }
     newTaskText.textContent = newTaskInfo.title;
+    newTaskTextDiv.appendChild(iconImportant);
     newTaskTextDiv.appendChild(newTaskText);
 
     // кнопка mark important
@@ -203,10 +208,24 @@ taskList.addEventListener('click', async (e) => {
         if (clickedElement.className === 'task') {
             const taskId = Number(clickedElement.dataset.id);
             const taskText = clickedElement.querySelector('.task_text');
+            const taskImportantIcon = clickedElement.querySelector('.fa-star');
             const task = allTasks.find((t) => t.id === taskId);
             task.completed = !task.completed;
             await updateTask(task);
             taskText.classList.toggle('completed');
+            taskImportantIcon.classList.toggle('completed');
+        }
+        // кнопка make important
+        if (clickedElement.classList.contains('task_important__button')) {
+            const task = clickedElement.parentElement;
+            task.querySelector('.fa-star').classList.toggle('hide');
+            clickedElement.classList.toggle('not_important');
+            if (clickedElement.classList.contains('not_important')) {
+                clickedElement.textContent = 'Not Important';
+            } else {
+                clickedElement.textContent = 'Make Important';
+            }
+            console.log(clickedElement);
         }
 
         filterTasks(currentFilter);
