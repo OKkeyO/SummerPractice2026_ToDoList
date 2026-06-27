@@ -101,13 +101,11 @@ async function deleteTask(taskId) {
 // обновление задачи
 async function updateTask(task) {
     const response = await fetch(`${API_URL}/${task.id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
             'Content-type': 'application/json; charset=UTF-8',
         },
         body: JSON.stringify({
-            userId: task.userId,
-            title: task.title,
             completed: task.completed,
         }),
     });
@@ -152,7 +150,7 @@ function filterTasks(filterParam) {
 // функция поиска
 function searchTasks(value) {
     const searchedTasks = allTasks.filter(task =>
-        task.title.toLowerCase().includes(value)
+        task.title.toLowerCase().includes(value.toLowerCase())
     );
     taskList.replaceChildren();
     searchedTasks.forEach(addTask);
@@ -197,25 +195,35 @@ taskList.addEventListener('click', async (e) => {
     try {
         const clickedElement = e.target;
         // если была нажата кнопка удаления задачи
-        if (clickedElement.classList.contains('fa-trash-can')) {
-            const task = clickedElement.parentElement.parentElement;
+        if (clickedElement.closest('.task_delete__button')) {
+            const task = clickedElement.closest('.task');
             const taskId = Number(task.dataset.id);
             await deleteTask(taskId);
             task.remove();
             allTasks = allTasks.filter(t => t.id !== taskId);
         }
         // если нажат сам элемент списка задач
-        if (clickedElement.className === 'task') {
+        if (clickedElement.classList.contains('task')) {
             const taskId = Number(clickedElement.dataset.id);
             const taskText = clickedElement.querySelector('.task_text');
             const taskImportantIcon = clickedElement.querySelector('.fa-star');
             const task = allTasks.find((t) => t.id === taskId);
-            task.completed = !task.completed;
-            await updateTask(task);
+
+            // try..catch для того, чтобы интерфейс менялся сразу, не ожидая ответа сервера
+            const previousState = task.completed;
+            task.completed = !previousState;
             taskText.classList.toggle('completed');
             taskImportantIcon.classList.toggle('completed');
+            try{
+                await updateTask(task);
+            }
+            catch {
+                task.completed = previousState;
+                taskText.classList.toggle('completed');
+                taskImportantIcon.classList.toggle('completed');
+            }
         }
-        // кнопка make important
+        // кнопка mark important
         if (clickedElement.classList.contains('task_important__button')) {
             const task = clickedElement.parentElement;
             task.querySelector('.fa-star').classList.toggle('hide');
@@ -223,9 +231,8 @@ taskList.addEventListener('click', async (e) => {
             if (clickedElement.classList.contains('not_important')) {
                 clickedElement.textContent = 'Not Important';
             } else {
-                clickedElement.textContent = 'Make Important';
+                clickedElement.textContent = 'Mark Important';
             }
-            console.log(clickedElement);
         }
 
         filterTasks(currentFilter);
@@ -243,6 +250,5 @@ navList.addEventListener('click', (e) => {
 
 // listener на поле поиска
 searchbarInput.addEventListener('input', (e) => {
-    const value = e.target.value.toLowerCase();
-    searchTasks(value);
+    searchTasks(e.target.value);
 })
