@@ -1,14 +1,17 @@
 * {
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: Arial, Helvetica, serif;
     outline: none;
 }
 
 body {
     display: flex;
+    min-height: 200vh;
+    background: url("images/background.png") no-repeat;
+    background-size: contain;
 }
 
 .container {
-    flex: 1;
+    width: 60%;
 }
 
 header {
@@ -54,23 +57,33 @@ header {
 
 .nav_list {
     display: flex;
-    gap: 15px;
     list-style: none;
+    border-top: 2px solid #ccc;
+    padding-inline-start: 0;
 }
 
 .nav_item {
+    font-size: 14px;
     color: grey;
     text-decoration: none;
     cursor: pointer;
+    font-weight: bold;
+    padding-left: 50px;
+    padding-right: 50px;
+    padding-top: 10px;
+    margin-top: -1px;
+
+    border-top: 4px transparent solid;
+    transition: color 0.3s ease, border-top 0.3s ease;
 }
 
 .nav_item:hover {
     color: #292929;
-    font-weight: bold;
 }
 
 .active {
     color: #292929;
+    border-top: 4px solid #007bff;
     font-weight: bold;
 }
 
@@ -88,9 +101,9 @@ header {
 
 textarea {
     display: flex;
-    width: 100%;
+    width: 99%;
     height: 100px;
-    max-width: 1500px;
+    max-width: 900px;
 }
 
 .add_new_task_input {
@@ -102,6 +115,7 @@ textarea {
     border-radius: 1px;
     color: white;
     box-shadow: #aaaaaa 1px 1px 4px;
+    transition: box-shadow 0.3s ease;
 }
 
 .add_new_task_input:focus, .add_new_task_input:hover {
@@ -118,18 +132,20 @@ textarea {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 20px;
 }
 
 .task {
     display: flex;
     align-items: flex-start;
-    gap: 5px;
+    gap: 20px;
     padding: 10px;
     min-height: 70px;
     height: auto;
-    border-radius: 6px;
-    box-shadow: #aaaaaa 1px 1px 4px;
+    border-radius: 2px;
+    background-color: white;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    transition: box-shadow 0.3s ease;
 }
 
 .hide {
@@ -139,6 +155,12 @@ textarea {
 .task:hover {
     border: 1px solid #2e49f3;
     box-shadow: #3579ea 1px 1px 4px;
+}
+
+.task:hover .task_important__button,
+.task:hover .task_delete__button {
+    opacity: 1;
+    visibility: visible;
 }
 
 .task_info {
@@ -167,6 +189,9 @@ textarea {
     border: none;
     border-radius: 15px;
     box-shadow: #aaaaaa 1px 1px 4px;
+    transition: box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .task_important__button:hover {
@@ -192,6 +217,9 @@ textarea {
     border: none;
     border-radius: 45px;
     box-shadow: #aaaaaa 1px 1px 4px;
+    transition: box-shadow 0.3s ease, opacity 0.3s ease, visibility 0.3s ease;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .task_delete__button:hover {

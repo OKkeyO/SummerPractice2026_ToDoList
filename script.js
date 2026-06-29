@@ -3,6 +3,7 @@ const LIMIT = 20;
 
 let allTasks = [];
 let currentFilter = 'all';
+let currentSearch = '';
 
 const taskList = document.querySelector('.task_list');
 const addNewTaskForm = document.querySelector('.add_new_task');
@@ -24,7 +25,9 @@ function addTask(newTaskInfo) {
     newTaskTextDiv.setAttribute('class', 'task_info');
     const iconImportant = document.createElement('i');
     iconImportant.setAttribute('class', 'fa-regular fa-star');
-    iconImportant.classList.add('hide');
+    if (!newTaskInfo.important) {
+        iconImportant.classList.add('hide');
+    }
     const newTaskText = document.createElement('span');
     newTaskText.setAttribute('class', 'task_text');
     if (newTaskInfo.completed) {
@@ -38,7 +41,10 @@ function addTask(newTaskInfo) {
     // кнопка mark important
     const newTaskBtnMarkImportant = document.createElement('button');
     newTaskBtnMarkImportant.setAttribute('class', 'task_important__button');
-    newTaskBtnMarkImportant.textContent = 'Mark Important';
+    newTaskBtnMarkImportant.textContent = newTaskInfo.important ? 'Not Important' : 'Mark Important';
+    if (newTaskInfo.important) {
+        newTaskBtnMarkImportant.classList.add('not_important');
+    }
 
     // кнопка удаления задачи
     const newTaskBtnDelete = document.createElement('button');
@@ -65,6 +71,7 @@ async function saveTask(taskInfo) {
             userId: 1,
             title: taskInfo,
             completed: false,
+            important: false,
         }),
     });
     if (!response.ok) {
@@ -114,47 +121,38 @@ async function updateTask(task) {
     }
 }
 
-// функция фильтрации
-function filterTasks(filterParam) {
-    const tasks = taskList.querySelectorAll('.task');
+// отображение списка дел
+function renderTasks() {
+    taskList.replaceChildren();
 
-    // отображение элементов соответствующих фильтру
-    tasks.forEach(task => {
-        task.classList.remove('hide');
-        const taskId = Number(task.dataset.id);
-        const taskData = allTasks.find((t) => t.id === taskId);
+    let tasks = [...allTasks];
 
-        switch (filterParam) {
-            case 'active':
-                if (taskData.completed) {
-                    task.classList.add('hide');
-                }
-                break;
-            case 'done':
-                if (!taskData.completed) {
-                    task.classList.add('hide');
-                }
-                break;
-        }
-    });
+    // фильтр
+    switch (currentFilter) {
+        case 'active':
+            tasks = tasks.filter(task => !task.completed);
+            break;
+        case 'done':
+            tasks = tasks.filter(task => task.completed);
+            break;
+    }
+
+    // поиск
+    if (currentSearch.trim()) {
+        tasks = tasks.filter(task =>
+            task.title.toLowerCase().includes(currentSearch.toLowerCase())
+        );
+    }
+
+    tasks.forEach(addTask);
 
     // подсветка выбранного фильтра
     navListItems.forEach(navListItem => {
         navListItem.classList.remove('active');
-        if (navListItem.dataset.f === filterParam) {
+        if (navListItem.dataset.f === currentFilter) {
             navListItem.classList.add('active');
         }
     });
-}
-
-// функция поиска
-function searchTasks(value) {
-    const searchedTasks = allTasks.filter(task =>
-        task.title.toLowerCase().includes(value.toLowerCase())
-    );
-    taskList.replaceChildren();
-    searchedTasks.forEach(addTask);
-    filterTasks(currentFilter);
 }
 
 // listener к форме создания новой задачи
@@ -167,11 +165,10 @@ addNewTaskForm.addEventListener('submit', async (e) => {
 
         const newTask = await saveTask(addNewTaskValue);
         // меняем id у задачи, потому что api всегда возвращает фиксированное значение
-        newTask.id = allTasks.length + 1;
+        newTask.id = crypto.randomUUID();
         allTasks.push(newTask);
 
-        addTask(newTask);
-        filterTasks(currentFilter);
+        renderTasks();
     } catch (error) {
         alert(`Не удалось сохранить задачу. ${error.message}`);
     }
@@ -179,15 +176,12 @@ addNewTaskForm.addEventListener('submit', async (e) => {
 
 // загрузка задач из api при загрузке окна
 document.addEventListener('DOMContentLoaded', async () => {
-    allTasks = await getTasks();
+    allTasks = (await getTasks()).map(task => ({
+        ...task,
+        important: false
+    }));
 
-    allTasks.forEach((task) => {
-        if (task.title) {
-            addTask(task)
-        }
-    });
-
-    filterTasks(currentFilter);
+    renderTasks();
 })
 
 // действия с taskList
@@ -197,45 +191,39 @@ taskList.addEventListener('click', async (e) => {
         // если была нажата кнопка удаления задачи
         if (clickedElement.closest('.task_delete__button')) {
             const task = clickedElement.closest('.task');
-            const taskId = Number(task.dataset.id);
+            const taskId = task.dataset.id;
             await deleteTask(taskId);
-            task.remove();
-            allTasks = allTasks.filter(t => t.id !== taskId);
+            allTasks = allTasks.filter(task => String(task.id) !== taskId);
+            renderTasks();
         }
         // если нажат сам элемент списка задач
         if (clickedElement.classList.contains('task')) {
-            const taskId = Number(clickedElement.dataset.id);
+            const taskId = clickedElement.dataset.id;
             const taskText = clickedElement.querySelector('.task_text');
             const taskImportantIcon = clickedElement.querySelector('.fa-star');
-            const task = allTasks.find((t) => t.id === taskId);
+            const task = allTasks.find((task) => String(task.id) === taskId);
 
             // try..catch для того, чтобы интерфейс менялся сразу, не ожидая ответа сервера
             const previousState = task.completed;
             task.completed = !previousState;
             taskText.classList.toggle('completed');
             taskImportantIcon.classList.toggle('completed');
-            try{
+            try {
                 await updateTask(task);
-            }
-            catch {
+            } catch {
                 task.completed = previousState;
                 taskText.classList.toggle('completed');
                 taskImportantIcon.classList.toggle('completed');
             }
+            renderTasks();
         }
         // кнопка mark important
         if (clickedElement.classList.contains('task_important__button')) {
-            const task = clickedElement.parentElement;
-            task.querySelector('.fa-star').classList.toggle('hide');
-            clickedElement.classList.toggle('not_important');
-            if (clickedElement.classList.contains('not_important')) {
-                clickedElement.textContent = 'Not Important';
-            } else {
-                clickedElement.textContent = 'Mark Important';
-            }
+            const taskId = clickedElement.parentElement.dataset.id;
+            const task = allTasks.find((task) => String(task.id) === taskId)
+            task.important = !task.important;
+            renderTasks();
         }
-
-        filterTasks(currentFilter);
     } catch (error) {
         console.log(error);
     }
@@ -245,10 +233,11 @@ taskList.addEventListener('click', async (e) => {
 navList.addEventListener('click', (e) => {
     if (e.target.tagName !== 'LI') return;
     currentFilter = e.target.dataset.f;
-    filterTasks(currentFilter);
+    renderTasks();
 })
 
 // listener на поле поиска
 searchbarInput.addEventListener('input', (e) => {
-    searchTasks(e.target.value);
+    currentSearch = e.target.value;
+    renderTasks();
 })
